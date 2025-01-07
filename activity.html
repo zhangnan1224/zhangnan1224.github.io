@@ -1,0 +1,26 @@
+<head>
+    <!-- 现有的head内容 -->
+    <script>
+        // 获取URL参数中的小组编号
+        const urlParams = new URLSearchParams(window.location.search);
+        const groupNumber = urlParams.get('group');
+        
+        // 页面加载完成后设置小组信息
+        window.onload = function() {
+            if (groupNumber) {
+                document.title = `第${groupNumber}小组 - 数据收集与拖动按钮`;
+                const groupInfo = document.createElement('div');
+                groupInfo.style.position = 'fixed';
+                groupInfo.style.top = '20px';
+                groupInfo.style.right = '20px';
+                groupInfo.style.padding = '10px 20px';
+                groupInfo.style.backgroundColor = '#3498db';
+                groupInfo.style.color = 'white';
+                groupInfo.style.borderRadius = '5px';
+                groupInfo.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+                groupInfo.textContent = `当前：第${groupNumber}小组`;
+                document.body.appendChild(groupInfo);
+            }
+        }
+    </script>
+</head> 

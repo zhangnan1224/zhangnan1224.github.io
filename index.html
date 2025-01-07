@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小组选择</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .group-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .group-button {
+            padding: 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            text-align: center;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100px;
+        }
+
+        .group-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            background-color: #2980b9;
+        }
+
+        @media (max-width: 600px) {
+            .group-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+
+        .group-button.submitted {
+            background-color: #27ae60;
+        }
+
+        .group-button.submitted:hover {
+            background-color: #219a52;
+        }
+
+        .preview-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+        }
+
+        .preview-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: calc(90vh - 100px);
+        }
+
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .submissions-container {
+            margin-top: 50px;
+            padding: 20px;
+        }
+
+        .submissions-title {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+
+        .submissions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 20px;
+        }
+
+        .submission-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .submission-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .submission-image {
+            width: 100%;
+            height: 200px;
+            object-fit: contain;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .submission-image:hover {
+            opacity: 0.9;
+        }
+
+        .submission-info {
+            padding: 15px;
+        }
+
+        .group-label {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .rating-container {
+            margin-top: 10px;
+        }
+
+        .rating-stars {
+            color: #ddd;
+            font-size: 20px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .rating-stars span {
+            margin-right: 5px;
+            transition: color 0.2s;
+        }
+
+        .rating-stars span.active {
+            color: #f1c40f;
+        }
+
+        .rating-stars span:hover,
+        .rating-stars span:hover ~ span {
+            color: #f1c40f;
+        }
+
+        .comment-input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: vertical;
+        }
+
+        .save-rating {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        .save-rating:hover {
+            background-color: #2980b9;
+        }
+
+        .comment-text {
+            margin-top: 10px;
+            color: #666;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .image-container {
+            position: relative;
+        }
+
+        .edit-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(52, 152, 219, 0.9);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .edit-button:hover {
+            background-color: rgba(41, 128, 185, 1);
+        }
+
+        .group-button.submitted {
+            background-color: #27ae60;
+            position: relative;
+        }
+
+        .group-button.submitted:hover {
+            background-color: #219a52;
+        }
+
+        .group-button.submitted::after {
+            content: "点击修改";
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .group-button.submitted:hover::after {
+            opacity: 1;
+        }
+
+        .header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .clear-data-button {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .clear-data-button:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-controls">
+            <h1>请选择您的小组</h1>
+            <button onclick="clearAllData()" class="clear-data-button">清除所有数据</button>
+        </div>
+        <div class="group-grid">
+            <!-- 生成15个小组按钮 -->
+            <script>
+                const grid = document.querySelector('.group-grid');
+                for (let i = 1; i <= 15; i++) {
+                    const link = document.createElement('a');
+                    link.href = `groups.html?group=${i}`;
+                    link.className = 'group-button';
+                    
+                    // 检查是否已提交
+                    const submitted = localStorage.getItem(`group${i}_submitted`) === 'true';
+                    if (submitted) {
+                        link.classList.add('submitted');
+                        // 移除之前的 onclick 事件，让链接正常工作
+                        link.title = "点击返回编辑页面";
+                    }
+                    
+                    link.textContent = `第${i}小组`;
+                    grid.appendChild(link);
+                }
+
+                function showPreview(groupNumber) {
+                    const imageData = localStorage.getItem(`group${groupNumber}_image`);
+                    if (imageData) {
+                        const modal = document.getElementById('previewModal');
+                        const image = document.getElementById('previewImage');
+                        image.src = imageData;
+                        modal.style.display = 'flex';
+                    }
+                }
+
+                function closePreview() {
+                    document.getElementById('previewModal').style.display = 'none';
+                }
+
+                // 点击模态框背景关闭
+                document.getElementById('previewModal').addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closePreview();
+                    }
+                });
+            </script>
+        </div>
+
+        <!-- 添加截图展示区域 -->
+        <div class="submissions-container">
+            <h2 class="submissions-title">各小组编码规则展示</h2>
+            <div class="submissions-grid" id="submissionsGrid">
+                <!-- 由JavaScript动态生成提交卡片 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 修改预览模态框的内容 -->
+    <div class="preview-modal" id="previewModal">
+        <div class="preview-content">
+            <span class="close-button" onclick="closePreview()">&times;</span>
+            <img id="previewImage" class="preview-image">
+            <div class="submission-info">
+                <div class="group-label" id="previewGroupLabel"></div>
+                <div class="rating-container">
+                    <div class="rating-stars" id="previewRatingStars">
+                        <span data-rating="1">★</span>
+                        <span data-rating="2">★</span>
+                        <span data-rating="3">★</span>
+                        <span data-rating="4">★</span>
+                        <span data-rating="5">★</span>
+                    </div>
+                    <textarea class="comment-input" id="previewComment" placeholder="请输入评价意见..."></textarea>
+                    <button class="save-rating" onclick="saveRating()">保存评价</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 生成小组按钮的现有代码...
+
+        // 添加生成提交卡片的代码
+        function generateSubmissionCards() {
+            const grid = document.getElementById('submissionsGrid');
+            grid.innerHTML = '';
+
+            for (let i = 1; i <= 15; i++) {
+                const submitted = localStorage.getItem(`group${i}_submitted`) === 'true';
+                if (submitted) {
+                    const imageData = localStorage.getItem(`group${i}_image`);
+                    const rating = localStorage.getItem(`group${i}_rating`) || '0';
+                    const comment = localStorage.getItem(`group${i}_comment`) || '';
+
+                    const card = document.createElement('div');
+                    card.className = 'submission-card';
+                    card.innerHTML = `
+                        <div class="image-container">
+                            <img src="${imageData}" class="submission-image" alt="第${i}小组的提交" 
+                                 onclick="showPreview(${i})">
+                            <a href="index.html?group=${i}" class="edit-button">修改</a>
+                        </div>
+                        <div class="submission-info">
+                            <div class="group-label">第${i}小组</div>
+                            <div class="rating-container">
+                                <div class="rating-stars" data-group="${i}">
+                                    ${Array.from({length: 5}, (_, index) => `
+                                        <span class="${index < parseInt(rating) ? 'active' : ''}" 
+                                              data-rating="${index + 1}">★</span>
+                                    `).join('')}
+                                </div>
+                                <div class="comment-text">${comment}</div>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+
+                    // 为新卡片添加评分功能
+                    const ratingStars = card.querySelector('.rating-stars');
+                    ratingStars.addEventListener('click', handleRating);
+                }
+            }
+        }
+
+        // 添加评分处理函数
+        function handleRating(e) {
+            if (!e.target.matches('span')) return;
+
+            const groupNumber = e.currentTarget.dataset.group;
+            const rating = e.target.dataset.rating;
+            const stars = e.currentTarget.querySelectorAll('span');
+
+            // 更新星星显示
+            stars.forEach((star, index) => {
+                star.classList.toggle('active', index < rating);
+            });
+
+            // 保存评分
+            localStorage.setItem(`group${groupNumber}_rating`, rating);
+
+            // 如果需要添加评论，显示评论输入框
+            showPreview(groupNumber);
+        }
+
+        // 修改预览显示函数
+        function showPreview(groupNumber) {
+            currentGroupNumber = groupNumber;
+            const imageData = localStorage.getItem(`group${groupNumber}_image`);
+            const rating = localStorage.getItem(`group${groupNumber}_rating`) || '0';
+            const comment = localStorage.getItem(`group${groupNumber}_comment`) || '';
+
+            if (imageData) {
+                const modal = document.getElementById('previewModal');
+                const image = document.getElementById('previewImage');
+                const groupLabel = document.getElementById('previewGroupLabel');
+                const commentInput = document.getElementById('previewComment');
+
+                image.src = imageData;
+                groupLabel.textContent = `第${groupNumber}小组`;
+                commentInput.value = comment;
+
+                // 更新星级显示
+                const stars = document.querySelectorAll('#previewRatingStars span');
+                stars.forEach((star, index) => {
+                    star.classList.toggle('active', index < rating);
+                });
+
+                modal.style.display = 'flex';
+            }
+        }
+
+        // 修改保存评分函数
+        function saveRating() {
+            if (!currentGroupNumber) return;
+
+            const stars = document.querySelectorAll('#previewRatingStars span');
+            let rating = 0;
+            stars.forEach((star, index) => {
+                if (star.classList.contains('active')) {
+                    rating = index + 1;
+                }
+            });
+
+            const comment = document.getElementById('previewComment').value;
+
+            localStorage.setItem(`group${currentGroupNumber}_rating`, rating.toString());
+            localStorage.setItem(`group${currentGroupNumber}_comment`, comment);
+
+            // 更新展示区域
+            generateSubmissionCards();
+            closePreview();
+        }
+
+        // 修改预览模态框中的星级评分事件
+        document.querySelectorAll('#previewRatingStars span').forEach(star => {
+            star.addEventListener('click', function() {
+                const rating = this.dataset.rating;
+                const stars = document.querySelectorAll('#previewRatingStars span');
+                stars.forEach((s, index) => {
+                    s.classList.toggle('active', index < rating);
+                });
+            });
+        });
+
+        // 页面加载时生成提交卡片
+        window.addEventListener('load', generateSubmissionCards);
+
+        function clearAllData() {
+            if (confirm('确定要清除所有数据吗？此操作不可恢复！')) {
+                // 清除所有组的数据
+                for (let i = 1; i <= 15; i++) {
+                    localStorage.removeItem(`group${i}_submitted`);
+                    localStorage.removeItem(`group${i}_image`);
+                    localStorage.removeItem(`group${i}_rating`);
+                    localStorage.removeItem(`group${i}_comment`);
+                }
+                
+                // 刷新页面显示
+                location.reload();
+                
+                alert('所有数据已清除！');
+            }
+        }
+    </script>
+</body>
+</html> 
